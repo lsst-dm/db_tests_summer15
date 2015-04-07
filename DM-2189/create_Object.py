@@ -32,6 +32,13 @@ import re
 
 DEFAULTS_FILE = '/home/becla/.lsst/dbAuth-W13.txt'
 
+colsToSkip = ("deepCoaddId", "x", "y", "xVar", "yVar", "xyCov")
+
+colsToSkipPerFilter = (
+    "deepSourceId", "parentDeepSourceId", "filterId",
+    "ra", "decl", "raVar", "declVar", "radeclCov", "htmId20")
+
+
 con = MySQLdb.connect(read_default_file=DEFAULTS_FILE,
                       read_default_group="mysql")
 
@@ -72,8 +79,8 @@ for c in rdsColumns:
     destCol = m.group(3)
     if sourceTable != 'RunDeepSource':
         sys.exit(1)
-    allCols.append(ColInfo(sourceCol, destCol, colTypes[sourceCol]))
-
+    if destCol not in colsToSkip:
+        allCols.append(ColInfo(sourceCol, destCol, colTypes[sourceCol]))
 
 # produce strings that will be needed to generate:
 # a) "create table Object (<column definitions>)"
@@ -90,11 +97,11 @@ for c in allCols:
 
 for filterName in ('u', 'g', 'r', 'i', 'z', 'y'):
     for c in allCols:
-        createTableStr += '''  %s_%s %s,
+        if c.destCol not in colsToSkipPerFilter:
+            createTableStr += '''  %s_%s %s,
 ''' % (filterName, c.destCol, c.colType)
-        insertIntoStr += "%s_%s, " % (filterName, c.destCol)
-        selectFromStr += "%s, " % c.srcCol
-
+            insertIntoStr += "%s_%s, " % (filterName, c.destCol)
+            selectFromStr += "%s, " % c.srcCol
 # remove the trailing ',' and the endl
 createTableStr = createTableStr[:-2]
 insertIntoStr = insertIntoStr[:-2]
