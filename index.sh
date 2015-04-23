@@ -12,7 +12,7 @@ mkdir -p $INDEX_DIR
 
 sph-htm-index \
     --config-file=$CFG_DIR/common.cfg \
-    --config-file=$CFG_DIR/$TABLE.cfg \
+    --config-file=$CFG_DIR/$TABLE.index.cfg \
     --in.csv.null=NULL \
     --in.csv.delimiter=$'\t' \
     --in.csv.escape=\\ \
