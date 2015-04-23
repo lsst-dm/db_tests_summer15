@@ -15,7 +15,7 @@ GROUP BY mag;
 -- ~1.3e9 r-band forced sources, and 14.67e6 deep sources, or 90.37 r-band
 -- forced sources per deep source on average. We want an average of 19.4
 -- sources per object, so we compute the magnitude M such that only ~19.44/90.37
--- or ~21.5% of the deep sources have magnitude greater than M. We will select
+-- or ~21.5% of the deep sources have magnitude <= M. We will select
 -- the associated r-band forced sources and call them sources for the purpose
 -- of large scale testing.
 
