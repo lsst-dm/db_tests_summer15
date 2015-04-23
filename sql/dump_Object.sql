@@ -47,4 +47,4 @@ SELECT
 FROM
     DC_W13_Stripe82.DeepSource AS s INNER JOIN
     DC_W13_Stripe82.DeepCoadd AS c ON (s.deepCoaddId = c.deepCoaddId) INNER JOIN
-    qserv_in2p3_2015.DeepSourceIds AS i ON (s.deepSourceId = i.deepSourceId);
+    qserv_in2p3_2015.DeepSource AS i ON (s.deepSourceId = i.deepSourceId);
