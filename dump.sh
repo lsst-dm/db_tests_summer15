@@ -1,7 +1,10 @@
 #! /bin/sh
+
+TABLE=$1
 mkdir -p dump
-cat sql/dump_ForcedSource.sql | \
+
+cat sql/dump_$TABLE.sql | \
 mysql -A \
       -h lsst10.ncsa.illinois.edu \
       -B --quick --disable-column-names \
-      > dump/ForcedSource.tsv
+      > dump/$TABLE.tsv
