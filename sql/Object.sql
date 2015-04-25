@@ -241,4 +241,6 @@ CREATE TABLE Object (
     y_flagBadInstFlux     BIT(1),
     y_flagBadCentroid     BIT(1),
     y_flagBadShape        BIT(1),
+
+    KEY(subChunkId)
 ) ENGINE=MyISAM;
