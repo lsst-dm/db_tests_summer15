@@ -11,7 +11,7 @@ source /qserv/stack/loadLSST.bash
 setup mysql
 
 # Obtain the list of chunks owned by this node.
-CHUNKS=`/sps/lsst/Qserv/smm/db_tests_summer15/my_chunks.py`
+CHUNKS=`/sps/lsst/Qserv/smm/db_tests_summer15/scripts/my_chunks.py`
 
 MYSQL=mysql -u qsmaster -S /qserv/run/var/lib/mysql/mysql.sock -A -D LSST
 

@@ -9,7 +9,7 @@ source /qserv/stack/loadLSST.bash
 setup partition
 
 echo "chunk-id = [" > /tmp/chunks.cfg
-/sps/lsst/Qserv/smm/db_tests_summer15/my_chunks.py >> /tmp/chunks.cfg
+/sps/lsst/Qserv/smm/db_tests_summer15/scripts/my_chunks.py >> /tmp/chunks.cfg
 echo "]" >>  /tmp/chunks.cfg
 
 mkdir -p $CHUNKS_DIR
