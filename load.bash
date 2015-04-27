@@ -2,10 +2,10 @@
 set -e
 
 TABLE=$1
-PASSWORD=$2
 
 SQL_DIR=/sps/lsst/Qserv/smm/db_tests_summer15/sql
-CHUNKS_DIR=/qserv/data_generation/chunks
+DATA_DIR=/qserv/data_generation
+CHUNKS_DIR=$DATA_DIR/chunks
 
 source /qserv/stack/loadLSST.bash
 setup mysql
@@ -13,19 +13,16 @@ setup mysql
 # Obtain the list of chunks owned by this node.
 CHUNKS=`/sps/lsst/Qserv/smm/db_tests_summer15/my_chunks.py`
 
-# First, create the LSST database if it does not already exist.
-mysql -u root -p$PASSWORD -S /qserv/run/var/lib/mysql/mysql.sock -A \
-      -e "CREATE DATABASE IF NOT EXISTS LSST"
+MYSQL=mysql -u qsmaster -S /qserv/run/var/lib/mysql/mysql.sock -A -D LSST
 
-# Next, create the table we want to create.
-mysql -u root -p$PASSWORD -S /qserv/run/var/lib/mysql/mysql.sock -A -D LSST \
-      < $SQL_DIR/$TABLE.sql
+# Create a template for the table we want to create.
+$MYSQL < $SQL_DIR/$TABLE.sql
 
 # Remove the local portion of the deepSourceId to partition
 # mapping if we are loading Objects (we are about to recompute it).
 if [ $TABLE == Object ]
 then
-    rm -f /qserv/data_generation/object-locations.tsv
+    rm -f $DATA_DIR/object-locations.tsv
 fi
 
 for C in $CHUNKS ; do
@@ -35,27 +32,27 @@ for C in $CHUNKS ; do
     CHUNK_TABLE=${TABLE}_${C}
 
     # Create the chunk table.
-    mysql -u root -p$PASSWORD -S /qserv/run/var/lib/mysql/mysql.sock -A -D LSST \
-          -e "CREATE TABLE $CHUNK_TABLE LIKE $TABLE"
+    $MYSQL -e "CREATE TABLE $CHUNK_TABLE LIKE $TABLE"
 
     if [ -s $CHUNK_FILE ]
     then
-        # Load the chunk table, with the usual optimizations.
-        mysql -u root -p$PASSWORD -S /qserv/run/var/lib/mysql/mysql.sock -A -D LSST <<SQL
+        # Load the chunk table with the usual optimizations.
+        $MYSQL <<STATEMENTS
             SET myisam_sort_buffer_size = 4294967296;
             ALTER TABLE $CHUNK_TABLE DISABLE KEYS;
             LOAD DATA INFILE '$CHUNK_FILE' INTO TABLE $CHUNK_TABLE;
             SHOW WARNINGS;
             ALTER TABLE $CHUNK_TABLE ENABLE KEYS;
-SQL
+STATEMENTS
             if [ $TABLE == Object ]
             then
                 # If this is the Object table, extract the local portion of the
                 # deepSourceId to partition mapping.
-                mysql -u root -p$PASSWORD -S /qserv/run/var/lib/mysql/mysql.sock \
-                      -A -D LSST -B --quick --disable-column-names \
-                      -e "SELECT deepSourceId, chunkId, subChunkId FROM $CHUNK_TABLE" \
-                      >> /qserv/data_generation/object-locations.tsv
+                $MYSQL -B --quick --disable-column-names \
+                       -e "SELECT deepSourceId, chunkId, subChunkId FROM $CHUNK_TABLE" \
+                    >> $DATA_DIR/object-locations.tsv
+                sha512sum $DATA_DIR/object-locations.tsv \
+                        > $DATA_DIR/object-locations.tsv.sha512
             fi
     fi
 
@@ -67,19 +64,20 @@ SQL
 
         # Drop the PK, because a single Object can be in the overlap region
         # of more than one chunk.
-        mysql -u root -p$PASSWORD -S /qserv/run/var/lib/mysql/mysql.sock -A -D LSST <<SQL
+        $MYSQL <<STATEMENTS
             CREATE TABLE $CHUNK_TABLE LIKE $TABLE;
             ALTER TABLE $CHUNK_TABLE DROP PRIMARY KEY;
-SQL
+            ALTER TABLE $CHUNK_TABLE ADD KEY (deepSourceId);
+STATEMENTS
         if [ -s $CHUNK_FILE ]
         then
-            mysql -u root -p$PASSWORD -S /qserv/run/var/lib/mysql/mysql.sock -A -D LSST <<SQL
+            $MYSQL <<STATEMENTS
                 SET myisam_sort_buffer_size = 4294967296;
                 ALTER TABLE $CHUNK_TABLE DISABLE KEYS;
                 LOAD DATA INFILE '$CHUNK_FILE' INTO TABLE $CHUNK_TABLE;
                 SHOW WARNINGS;
                 ALTER TABLE $CHUNK_TABLE ENABLE KEYS;
-SQL
+STATEMENTS
         fi
     fi
 

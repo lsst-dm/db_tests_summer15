@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 TABLE=$1
 CFG_DIR=/sps/lsst/Qserv/smm/db_tests_summer15/conf
@@ -23,3 +23,6 @@ sph-htm-index \
     --mr.pool-size=8192 \
     --mr.block-size=16 \
     --out.dir=$INDEX_DIR/$TABLE
+
+# Checksum everything just in case.
+sha512sum $INDEX_DIR/$TABLE/* > $INDEX_DIR/$TABLE.sha512

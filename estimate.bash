@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 TABLE=$1
 MAX_LATITUDE=$2
@@ -20,3 +20,6 @@ sph-estimate-stats \
     --lon-min=0 --lon-max=360 --lat-min=-90 --lat-max=$MAX_LATITUDE \
     --out.dir=$STATS_DIR \
     > $STATS_DIR/stats.json
+
+# Checksum everything just in case.
+sha512sum $STATS_DIR/* > $STATS_DIR.sha512

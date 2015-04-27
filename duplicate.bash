@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 TABLE=$1
 CFG_DIR=/sps/lsst/Qserv/smm/db_tests_summer15/conf
@@ -27,3 +27,5 @@ sph-duplicate \
     --out.dir=$CHUNKS_DIR/$TABLE \
     > $CHUNKS_DIR/$TABLE.log 2>&1
 
+# Checksum everything just in case.
+sha512sum $CHUNKS_DIR/$TABLE/* > $CHUNKS_DIR/$TABLE.sha512

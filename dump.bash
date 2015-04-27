@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 TABLE=$1
 mkdir -p dump
