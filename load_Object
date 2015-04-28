@@ -38,4 +38,7 @@ ansible workers -a "sudo -u qserv /sps/lsst/Qserv/smm/db_tests_summer15/scripts/
 echo "[INFO] `date`: load secondary index ..."
 ansible czar -a "/sps/lsst/Qserv/smm/db_tests_summer15/scripts/load_object_index.bash"
 
+# Generate the empty-chunk list and copy it to the czar
+ansible czar -m shell -a '/sps/lsst/Qserv/smm/db_tests_summer15/scripts/create_empty_chunks.py | sudo -u qserv sh -c "cat > /qserv/run/var/lib/qserv/empty_LSST.txt"'
+
 echo "[INFO] `date`: done!"
