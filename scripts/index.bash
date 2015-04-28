@@ -1,4 +1,5 @@
 #! /bin/bash
+set -e
 
 TABLE=$1
 CFG_DIR=/sps/lsst/Qserv/smm/db_tests_summer15/conf

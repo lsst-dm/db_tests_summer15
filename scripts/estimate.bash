@@ -1,4 +1,5 @@
 #! /bin/bash
+set -e
 
 TABLE=$1
 MAX_LATITUDE=$2

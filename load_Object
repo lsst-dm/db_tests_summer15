@@ -1,0 +1,41 @@
+#! /bin/bash
+set -e
+ 
+# Copy the dump file to local disk of all workers
+echo "[INFO] `date`: copy dump file to local disk ..."
+ansible workers -a "sudo -u qserv mkdir -p /qserv/data_generation/dump"
+ansible workers -a "sudo -u qserv cp /sps/lsst/Qserv/smm/db_tests_summer15/dump/Object.tsv /qserv/data_generation/dump/"
+
+# HTM index the Object table
+echo "[INFO] `date`: HTM index ..."
+ansible workers -a "sudo -u qserv /sps/lsst/Qserv/smm/db_tests_summer15/scripts/index.bash Object"
+
+# Remove the dump, since it is no longer needed
+echo "[INFO] `date`: remove dump file ..." 
+ansible workers -a "sudo -u qserv rm /qserv/data_generation/dump/Object.tsv"
+
+# Estimate population of each chunk
+echo "[INFO] `date`: estimate chunk populations ..."
+ansible workers -a "sudo -u qserv /sps/lsst/Qserv/smm/db_tests_summer15/scripts/estimate.bash Object 45"
+
+# Duplicate and partition the Object table.
+echo "[INFO] `date`: duplicate and partition ..."
+ansible workers -a "sudo -u qserv /sps/lsst/Qserv/smm/db_tests_summer15/scripts/duplicate.bash Object"
+
+# Load chunks
+echo "[INFO] `date`: load chunks ..."
+ansible workers -a "sudo -u qserv /sps/lsst/Qserv/smm/db_tests_summer15/scripts/load.bash Object"
+
+# Remove the LOAD DATA INFILE inputs, which are no longer required
+echo "[INFO] `date`: removing duplicated TSV files ..."
+ansible workers -a "sudo -u qserv rm -rf /qserv/data_generation/chunks/Object/"
+
+# Sort the local portions of the Object ID -> chunk/sub-chunk mapping
+echo "[INFO] `date`: sort secondary index pieces locally ..."
+ansible workers -a "sudo -u qserv /sps/lsst/Qserv/smm/db_tests_summer15/scripts/local_sort.bash"
+
+# Gather and merge-sort pieces of the mapping, then load it on the czar
+echo "[INFO] `date`: load secondary index ..."
+ansible czar -a "/sps/lsst/Qserv/smm/db_tests_summer15/scripts/load_object_index.bash"
+
+echo "[INFO] `date`: done!"

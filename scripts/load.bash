@@ -13,7 +13,7 @@ setup mysql
 # Obtain the list of chunks owned by this node.
 CHUNKS=`/sps/lsst/Qserv/smm/db_tests_summer15/scripts/my_chunks.py`
 
-MYSQL=mysql -u qsmaster -S /qserv/run/var/lib/mysql/mysql.sock -A -D LSST
+MYSQL="mysql -u qsmaster -S /qserv/run/var/lib/mysql/mysql.sock -A -D LSST"
 
 # Create a template for the table we want to create.
 $MYSQL < $SQL_DIR/$TABLE.sql
@@ -51,8 +51,6 @@ STATEMENTS
                 $MYSQL -B --quick --disable-column-names \
                        -e "SELECT deepSourceId, chunkId, subChunkId FROM $CHUNK_TABLE" \
                     >> $DATA_DIR/object-locations.tsv
-                sha512sum $DATA_DIR/object-locations.tsv \
-                        > $DATA_DIR/object-locations.tsv.sha512
             fi
     fi
 
@@ -83,4 +81,12 @@ STATEMENTS
 
 done
 
-echo "`date`: finished loading $TABLE chunks"
+echo "`date`: checksumming"
+
+sha512sum $DATA_DIR/object-locations.tsv \
+        > $DATA_DIR/object-locations.tsv.sha512
+
+sha512sum /qserv/run/var/lib/mysql/LSST/$TABLE* \
+        > $CHUNKS_DIR/$TABLE.sha512
+
+echo "`date`: done!"
