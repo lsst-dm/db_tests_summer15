@@ -3,7 +3,7 @@ set -e
 
 DATA_DIR=/qserv/data_generation/
 
-mkir -p $DATA_DIR/tmp
+mkdir -p $DATA_DIR/tmp
 
 sort -k1,1 -n -t $'\t' -S 12G -T $DATA_DIR/tmp \
     -o $DATA_DIR/object-locations-sorted.tsv \

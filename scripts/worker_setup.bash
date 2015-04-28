@@ -20,6 +20,7 @@ mysql -u root -p$PASSWORD -S /qserv/run/var/lib/mysql/mysql.sock -A <<STATEMENTS
               Db = 'scisql' AND
               User = 'qsmaster' AND
               Table_name = 'Region';
+    FLUSH PRIVILEGES;
     CALL scisql.scisql_grantPermissions('qsmaster', 'localhost');
     CREATE DATABASE IF NOT EXISTS LSST;
     GRANT ALL ON LSST.* TO 'qsmaster'@'localhost';

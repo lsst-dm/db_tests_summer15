@@ -1,6 +1,6 @@
 #! /bin/bash
 set -e
- 
+
 # Copy the dump file to local disk of all workers
 echo "[INFO] `date`: copy dump file to local disk ..."
 ansible workers -a "sudo -u qserv mkdir -p /qserv/data_generation/dump"
@@ -11,7 +11,7 @@ echo "[INFO] `date`: HTM index ..."
 ansible workers -a "sudo -u qserv /sps/lsst/Qserv/smm/db_tests_summer15/scripts/index.bash Object"
 
 # Remove the dump, since it is no longer needed
-echo "[INFO] `date`: remove dump file ..." 
+echo "[INFO] `date`: remove dump file ..."
 ansible workers -a "sudo -u qserv rm /qserv/data_generation/dump/Object.tsv"
 
 # Estimate population of each chunk

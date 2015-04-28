@@ -22,4 +22,3 @@ if m:
         for i, c in enumerate(chunk_ids):
             if i % 24 == worker_id - 1:
                 print(c)
-

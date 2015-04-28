@@ -28,7 +28,7 @@ done
 echo "`date`: merging sorted runs..."
 
 sort -m -k1,1 -n -t $'\t' -S 12G -T $OUT_DIR/tmp --batch-size=50 \
-    $OUT_DIR/object-locations-sorted.tsv \ 
+    -o $OUT_DIR/object-locations-sorted.tsv \
     $OUT_DIR/runs/object-*.tsv
 
 echo "`date`: computing check-sums ..."
@@ -39,14 +39,17 @@ sha512sum $OUT_DIR/object-locations-sorted.tsv \
 echo "`date`: loading secondary index for LSST.Object"
 
 mysql -u qsmaster -S /qserv/run/var/lib/mysql/mysql.sock -A -D qservMeta <<STATEMENTS
+    DROP TABLE IF EXISTS LSST__Object;
     CREATE TABLE LSST__Object (
         deepSourceId BIGINT NOT NULL PRIMARY KEY,
         chunkId INTEGER NOT NULL,
         subChunkId INTEGER NOT NULL
     ) ENGINE=InnoDB;
-
-    LOAD DATA INFILE '$OUT_DIR/object-locations-sorted.tsv' INTO TABLE LSST_Object;
+    SET sql_log_bin=0;
+    BEGIN;
+    LOAD DATA INFILE '$OUT_DIR/object-locations-sorted.tsv' INTO TABLE LSST__Object;
     SHOW WARNINGS;
+    COMMIT;
 STATEMENTS
 
 echo "`date`: done!"
