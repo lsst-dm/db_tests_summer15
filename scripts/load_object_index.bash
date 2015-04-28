@@ -39,7 +39,7 @@ sha512sum $OUT_DIR/object-locations-sorted.tsv \
 echo "`date`: loading secondary index for LSST.Object"
 
 mysql -u qsmaster -S /qserv/run/var/lib/mysql/mysql.sock -A -D qservMeta <<STATEMENTS
-    CREATE TABLE LSST_Object (
+    CREATE TABLE LSST__Object (
         deepSourceId BIGINT NOT NULL PRIMARY KEY,
         chunkId INTEGER NOT NULL,
         subChunkId INTEGER NOT NULL
