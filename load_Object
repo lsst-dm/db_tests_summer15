@@ -41,4 +41,7 @@ ansible czar -a "/sps/lsst/Qserv/smm/db_tests_summer15/scripts/load_object_index
 # Generate the empty-chunk list and copy it to the czar
 ansible czar -m shell -a '/sps/lsst/Qserv/smm/db_tests_summer15/scripts/create_empty_chunks.py | sudo -u qserv sh -c "cat > /qserv/run/var/lib/qserv/empty_LSST.txt"'
 
+# Update the CSS
+ansible czar -a "sudo -u qserv /sps/lsst/Qserv/smm/db_tests_summer15/scripts/update_css.bash Object"
+
 echo "[INFO] `date`: done!"

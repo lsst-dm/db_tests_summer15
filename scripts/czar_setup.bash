@@ -19,5 +19,7 @@ mysql -u root -p$PASSWORD -S /qserv/run/var/lib/mysql/mysql.sock -A <<STATEMENTS
     UPDATE mysql.user SET Super_Priv='Y'
         WHERE user = 'qsmaster' AND host = 'localhost';
     FLUSH PRIVILEGES;
+    CREATE DATABASE IF NOT EXISTS LSST;
+    GRANT ALL ON LSST.* TO 'qsmaster'@'localhost';
     GRANT FILE ON *.* TO 'qsmaster'@'localhost';
 STATEMENTS
