@@ -1,5 +1,11 @@
 #! /bin/bash
 
+if [ $# -ne 1 -o -z "$1" ]
+then
+    echo "Please supply a table name"
+    exit 1
+fi
+
 TABLE=$1
 CFG_DIR=/sps/lsst/Qserv/smm/db_tests_summer15/conf
 INDEX_DIR=/qserv/data_generation/index

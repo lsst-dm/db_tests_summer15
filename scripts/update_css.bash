@@ -1,7 +1,13 @@
 #! /bin/bash
 set -e
 
+if [ $# -ne 1 -o -z "$1" ]
+then
+    echo "Please supply a table name"
+    exit 1
+fi
 TABLE=$1
+
 CFG_DIR=/sps/lsst/Qserv/smm/db_tests_summer15/conf
 SQL_DIR=/sps/lsst/Qserv/smm/db_tests_summer15/sql
 TMP_DIR=`mktemp -d`

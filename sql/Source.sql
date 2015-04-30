@@ -1,4 +1,4 @@
-CREATE TABLE `RunDeepForcedSource` (
+CREATE TABLE Source (
   `id` bigint(20) NOT NULL,
   `coord_ra` double DEFAULT NULL,
   `coord_decl` double DEFAULT NULL,
@@ -89,6 +89,5 @@ CREATE TABLE `RunDeepForcedSource` (
   PRIMARY KEY (`id`),
   KEY `IDX_parent` (`parent`),
   KEY `IDX_exposure_id` (`exposure_id`),
-  KEY `IDX_exposure_filter_id` (`exposure_filter_id`),
-  KEY `objectId` (`objectId`),
+  KEY `objectId` (`objectId`)
 ) ENGINE=MyISAM;
