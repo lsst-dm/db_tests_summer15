@@ -23,6 +23,9 @@ MYSQL="mysql -u qsmaster -S /qserv/run/var/lib/mysql/mysql.sock -A -D LSST"
 # Create a template for the table we want to create.
 $MYSQL < $SQL_DIR/$TABLE.sql
 
+# Create the special chunk for the table
+$MYSQL -e "CREATE TABLE ${TABLE}_1234567890 LIKE $TABLE"
+
 # Remove the local portion of the deepSourceId to partition
 # mapping if we are loading Objects (we are about to recompute it).
 if [ $TABLE == Object ]
