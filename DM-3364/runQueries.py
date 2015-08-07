@@ -30,6 +30,7 @@ test.
 
 import commands
 import logging
+import pprint
 import random
 import threading
 import time
@@ -43,15 +44,32 @@ import MySQLdb
 queryPools = {}
 
 # Low Volume Queries
-queryPools["LV"] = [
-    "SELECT ra, decl FROM Object WHERE deepSourceId = 3306154155315676",
-    "SELECT ra, decl FROM Object WHERE qserv_areaspec_box(0.95, 19.171, 1.0, 19.175)"
-]
+queryPools["LV"] = []
+for i in range(0, 10):
+    # single object
+    queryPools["LV"].append("SELECT ra, decl FROM Object WHERE deepSourceId = %d" % random.randint(2251799813685248, 4503595332407303))
+
+    # small area selection
+    raMin = random.uniform(0, 350)
+    declMin = random.uniform(-87, 45)
+    raDist = random.uniform(0.01, 0.2)
+    declDist = random.uniform(0.01, 0.2)
+    queryPools["LV"].append("SELECT ra, decl FROM Object WHERE qserv_areaspec_box(%f, %f, %f, %f)" % (raMin, declMin, raMin+raDist, declMin+declDist))
+
+    # small area join
+    raMin = random.uniform(0, 350)
+    declMin = random.uniform(-87, 45)
+    raDist = random.uniform(0.01, 0.1)
+    declDist = random.uniform(0.01, 0.2)
+    queryPools["LV"].append("SELECT o.deepSourceId FROM Object o, Source s WHERE qserv_areaspec_box(%f, %f, %f, %f) and o.deepSourceId = s.objectId" % (raMin, declMin, raMin+raDist, declMin+declDist))
+
+
 
 # Full-table-scans on Object
 queryPools["FTSObj"] = [
     "SELECT COUNT(*) FROM Object WHERE y_instFlux > 5",
     "SELECT MIN(ra), MAX(ra) FROM Object WHERE decl > 3",
+    "SELECT MIN(ra), MAX(ra), MIN(decl), MAX(decl) FROM Object",
     "SELECT COUNT(*) AS n, AVG(ra), AVG(decl), chunkId FROM Object GROUP BY chunkId"
 ]
 
@@ -70,16 +88,19 @@ queryPools["joinObjSrs"] = [
     "SELECT o.deepSourceId, s.objectId, s.id, o.ra, o.decl FROM Object o, Source s WHERE o.deepSourceId=s.objectId AND s.flux_sinc BETWEEN 0.3 AND 0.31"
 ]
 
+pp = pprint.PrettyPrinter(indent=4)
+pp.pprint(queryPools)
+
 ###############################################################################
 # Definition of how many queries from each pool we want to run simultaneously
 ###############################################################################
 
 concurrency = {
-    "LV": 2,
-    "FTSObj": 0,
-    "FTSSrc": 0,
+    "LV": 10,
+    "FTSObj": 2,
+    "FTSSrc": 2,
     "FTSFSrc": 0,
-    "joinObjSrs": 0
+    "joinObjSrs": 1
 }
 
 ###############################################################################
