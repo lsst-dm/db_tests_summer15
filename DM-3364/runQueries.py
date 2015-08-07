@@ -64,12 +64,14 @@ for i in range(0, 10):
     queryPools["LV"].append("SELECT o.deepSourceId FROM Object o, Source s WHERE qserv_areaspec_box(%f, %f, %f, %f) and o.deepSourceId = s.objectId" % (raMin, declMin, raMin+raDist, declMin+declDist))
 
 
-
 # Full-table-scans on Object
 queryPools["FTSObj"] = [
     "SELECT COUNT(*) FROM Object WHERE y_instFlux > 5",
+    "SELECT COUNT(*) FROM Object WHERE y_instFlux > u_instFlux",
     "SELECT MIN(ra), MAX(ra) FROM Object WHERE decl > 3",
+    "SELECT MIN(ra), MAX(ra) FROM Object WHERE z_apFlux BETWEEN 1 and 2",                            |
     "SELECT MIN(ra), MAX(ra), MIN(decl), MAX(decl) FROM Object",
+    "SELECT MIN(ra), MAX(ra), MIN(decl), MAX(decl) FROM Object WHERE z_instFlux < 3",
     "SELECT COUNT(*) AS n, AVG(ra), AVG(decl), chunkId FROM Object GROUP BY chunkId"
 ]
 
@@ -123,7 +125,7 @@ timeBehind = {
     "joinObjSrs": 0
 }
 
-timeBehindMutex = Lock()
+timeBehindMutex = threading.Lock()
 
 ###############################################################################
 # Function that is executed inside a thread. It runs one query at a time.
@@ -159,7 +161,7 @@ def runQueries(qPoolId):
             f.write("\n")
         f.close()
         elT = time.time() - startTime            # elapsed
-        loT = targetRates[qPoolId] - elapsedTime # left over
+        loT = targetRates[qPoolId] - elT # left over
         logging.info('QTYPE_%s: %s left %s %s', qPoolId, elT, loT, q)
         if loT < 0: # the query was slower than it should
             timeBehindMutex.acquire()
