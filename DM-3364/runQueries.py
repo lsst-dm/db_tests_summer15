@@ -103,10 +103,34 @@ concurrency = {
     "joinObjSrs": 1
 }
 
+# how long a query should take in seconds
+targetRates = {
+    "LV": 10,
+    "FTSObj": 3600,
+    "FTSSrc": 3600*8,
+    "FTSFSrc": 3600*12,
+    "joinObjSrs": 3600*8
+}
+
+# time that we exceeded, if that happens, we won't sleep after future queries
+# that finished earlier than planned to recover that lost time
+
+timeBehind = {
+    "LV": 0,
+    "FTSObj": 0,
+    "FTSSrc": 0,
+    "FTSFSrc": 0,
+    "joinObjSrs": 0
+}
+
+timeBehindMutex = Lock()
+
 ###############################################################################
 # Function that is executed inside a thread. It runs one query at a time.
-# The query is picked randomly from the provided pool of queries.
+# The query is picked randomly from the provided pool of queries. If the query
+# finishes faster than our expected baseline time, the thread will sleep.
 ###############################################################################
+
 
 def runQueries(qPoolId):
     #sleepTime = {"LV":3,"FTSObj":7, "FTSSrc":8, "FTSFSrc":5, "joinObjSrs":15 }
@@ -134,8 +158,22 @@ def runQueries(qPoolId):
                 f.write("%s, " % col)
             f.write("\n")
         f.close()
-        elapsedTime = time.time() - startTime
-        logging.info('QTYPE_%s: %s %s', qPoolId, elapsedTime, q)
+        elT = time.time() - startTime            # elapsed
+        loT = targetRates[qPoolId] - elapsedTime # left over
+        logging.info('QTYPE_%s: %s left %s %s', qPoolId, elT, loT, q)
+        if loT < 0: # the query was slower than it should
+            timeBehindMutex.acquire()
+            timeBehind[qPoolId] += loT
+            logging.info("registering timeBehind %s, total is %s", loT, timeBehind[qPoolId])
+            timeBehindMutex.release()
+        elif timeBehind[qPoolId] > 0:
+            timeBehindMutex.acquire()
+            timeBehind[qPoolId] -= loT
+            logging.info("recovering timeBehind %s, total is %s", loT, timeBehind[qPoolId])
+            timeBehindMutex.release()
+        else:
+            logging.debug('sleeping %s', loT)
+            time.sleep(loT)
 
 ###############################################################################
 # Main. Starts all the threads. The threads will keep running for up to 24 h,
