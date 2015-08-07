@@ -69,7 +69,7 @@ queryPools["FTSObj"] = [
     "SELECT COUNT(*) FROM Object WHERE y_instFlux > 5",
     "SELECT COUNT(*) FROM Object WHERE y_instFlux > u_instFlux",
     "SELECT MIN(ra), MAX(ra) FROM Object WHERE decl > 3",
-    "SELECT MIN(ra), MAX(ra) FROM Object WHERE z_apFlux BETWEEN 1 and 2",                            |
+    "SELECT MIN(ra), MAX(ra) FROM Object WHERE z_apFlux BETWEEN 1 and 2",
     "SELECT MIN(ra), MAX(ra), MIN(decl), MAX(decl) FROM Object",
     "SELECT MIN(ra), MAX(ra), MIN(decl), MAX(decl) FROM Object WHERE z_instFlux < 3",
     "SELECT COUNT(*) AS n, AVG(ra), AVG(decl), chunkId FROM Object GROUP BY chunkId"
