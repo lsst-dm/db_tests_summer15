@@ -34,6 +34,8 @@ import random
 import threading
 import time
 
+import MySQLdb
+
 ###############################################################################
 # Queries to run, grouped into different pools of queries
 ###############################################################################
@@ -73,11 +75,11 @@ queryPools["joinObjSrs"] = [
 ###############################################################################
 
 concurrency = {
-    "LV": 5,
-    "FTSObj": 2,
-    "FTSSrc": 1,
+    "LV": 2,
+    "FTSObj": 0,
+    "FTSSrc": 0,
     "FTSFSrc": 0,
-    "joinObjSrs": 1
+    "joinObjSrs": 0
 }
 
 ###############################################################################
@@ -86,23 +88,31 @@ concurrency = {
 ###############################################################################
 
 def runQueries(qPoolId):
-    sleepTime = {"LV":3,"FTSObj":7, "FTSSrc":8, "FTSFSrc":5, "joinObjSrs":15 }
+    #sleepTime = {"LV":3,"FTSObj":7, "FTSSrc":8, "FTSFSrc":5, "joinObjSrs":15 }
+    time.sleep(random.randint(0,10)) # comment this out to skip staggering
     logging.debug("My query pool: %s", qPoolId)
     qPool = queryPools[qPoolId]
-    #conn = MySQLdb.connect(host='localhost',user='becla',passwd='',db='test')
-    #cur = conn.cursor()
+    conn = MySQLdb.connect(host='ccqserv100',
+                           port=4040,
+                           user='qsmaster',
+                           passwd='',
+                           db='LSST')
+    cursor = conn.cursor()
     while (1):
         q = random.choice(qPool)
         logging.debug("Running: %s", q)
         startTime = time.time()
-        time.sleep(sleepTime[qPoolId])
-
-        #cur.execute(q)
-        #ret = cursor.fetchall()
-        #f.open("/tmp/%s_%s" % (qPoolId, threading.current_thread()), 'a')
-        #f.writelines(["%s\n" % item for item in ret])
-        #f.close()
-
+        #time.sleep(sleepTime[qPoolId])
+        cursor.execute(q)
+        rows = cursor.fetchall()
+        f = open("/tmp/%s_%s" % (qPoolId,threading.current_thread().ident), 'a')
+        f.write("\n*************************************************\n")
+        f.write("%s\n---\n" % q)
+        for row in rows:
+            for col in row:
+                f.write("%s, " % col)
+            f.write("\n")
+        f.close()
         elapsedTime = time.time() - startTime
         logging.info('QTYPE_%s: %s %s', qPoolId, elapsedTime, q)
 
